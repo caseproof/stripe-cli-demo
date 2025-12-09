@@ -1,5 +1,12 @@
 # Stripe CLI Demo - Claude Code Instructions
 
+## AI Memory System
+This project uses the AI-Agent Memory System. Before making changes, read:
+- **STATUS.md** - Current state, blockers, recent changes
+- **ROADMAP.md** - Completed milestones, future considerations
+- **DECISIONS.md** - Architecture decisions and rationale
+- **JOURNAL.md** - Debugging notes, patterns, lessons learned
+
 ## Project Overview
 WordPress plugin that teaches developers how to use the Stripe CLI for local webhook testing. Provides a setup wizard, demo store with $1 product, and webhook event viewer.
 
