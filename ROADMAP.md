@@ -28,15 +28,56 @@
 
 ---
 
-## Future Considerations
+## Planned Enhancements
 
-These are **not planned** but could be considered if requested:
+Detailed planning documents available in [`docs/planning/`](docs/planning/).
 
-### Potential Enhancements
-- [ ] Multiple test products with different prices
-- [ ] Subscription product demo (recurring webhooks)
-- [ ] Custom webhook handler examples
-- [ ] Integration with WooCommerce for real-world demo
+### Enhancement 1: Multiple Test Products
+**Planning:** [001-multiple-test-products.md](docs/planning/001-multiple-test-products.md)
+**Priority:** Low | **Complexity:** Low
+
+- [ ] Create product registry class
+- [ ] Add Premium Widget ($25), Micro Widget ($0.50), Enterprise Widget ($100)
+- [ ] Update demo store with product grid
+- [ ] Pass product_id through checkout
+
+### Enhancement 2: Subscription Product Demo
+**Planning:** [002-subscription-product-demo.md](docs/planning/002-subscription-product-demo.md)
+**Priority:** Medium | **Complexity:** Medium
+**Depends on:** Enhancement 1
+
+- [ ] Add subscription products (monthly, annual, weekly)
+- [ ] Handle `subscription` mode in Checkout
+- [ ] Process subscription webhook events
+- [ ] Add subscription management section
+
+### Enhancement 3: Custom Webhook Handler Examples
+**Planning:** [003-custom-webhook-handler-examples.md](docs/planning/003-custom-webhook-handler-examples.md)
+**Priority:** Medium | **Complexity:** Low-Medium
+
+- [ ] Create docs/examples/ directory structure
+- [ ] Write basic pattern examples (signature, idempotency)
+- [ ] Write payment handling examples
+- [ ] Write subscription handling examples
+- [ ] Optional: Add examples viewer tab in admin
+
+### Enhancement 4: MemberPress Integration
+**Planning:** [004-memberpress-integration.md](docs/planning/004-memberpress-integration.md)
+**Priority:** High | **Complexity:** Medium-High
+
+- [ ] Detect MemberPress + Stripe Gateway
+- [ ] Hook into MemberPress webhook processing
+- [ ] Create MemberPress admin page
+- [ ] Display recent MemberPress transactions
+- [ ] List test membership products
+- [ ] Add event filtering for MemberPress events
+
+### Future: WooCommerce Integration
+**Priority:** Low | **Not yet planned**
+
+Could be added later for teams using WooCommerce instead of MemberPress.
+
+---
 
 ### Out of Scope
 Per project principles (YAGNI), the following are intentionally excluded:
