@@ -1,0 +1,8 @@
+{
+    "name": "demo/stripe-cli-demo",
+    "description": "WordPress plugin for Stripe CLI webhook testing demo",
+    "type": "wordpress-plugin",
+    "require": {
+        "stripe/stripe-php": "^13.0"
+    }
+}
