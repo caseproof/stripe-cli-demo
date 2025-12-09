@@ -34,6 +34,15 @@ class Stripe_CLI_Demo_Webhook {
     }
 
     /**
+     * Log message only when WP_DEBUG is enabled
+     */
+    private function debug_log($message) {
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('Stripe CLI Demo: ' . $message);
+        }
+    }
+
+    /**
      * Handle incoming webhook
      */
     public function handle_webhook($request) {
@@ -41,38 +50,34 @@ class Stripe_CLI_Demo_Webhook {
         $sig_header = $request->get_header('stripe-signature');
         $webhook_secret = get_option('stripe_cli_demo_webhook_secret', '');
 
-        // Log that we received a webhook (for debugging)
-        error_log('Stripe CLI Demo: Webhook received');
+        $this->debug_log('Webhook received');
 
-        // If no webhook secret configured, still try to process but log warning
+        // Require webhook secret - reject unsigned payloads
         if (empty($webhook_secret)) {
-            error_log('Stripe CLI Demo: No webhook secret configured - skipping signature verification');
+            $this->debug_log('No webhook secret configured - rejecting request');
+            return new WP_REST_Response(array(
+                'error' => 'Webhook secret not configured. Complete the setup wizard first.'
+            ), 400);
+        }
 
-            // Try to decode the payload directly
-            $event = json_decode($payload);
-            if (!$event || !isset($event->type)) {
-                return new WP_REST_Response(array('error' => 'Invalid payload'), 400);
-            }
-        } else {
-            // Verify webhook signature
-            if (!class_exists('\Stripe\Stripe')) {
-                error_log('Stripe CLI Demo: Stripe SDK not loaded');
-                return new WP_REST_Response(array('error' => 'Stripe SDK not loaded'), 500);
-            }
+        // Verify webhook signature
+        if (!class_exists('\Stripe\Stripe')) {
+            $this->debug_log('Stripe SDK not loaded');
+            return new WP_REST_Response(array('error' => 'Stripe SDK not loaded'), 500);
+        }
 
-            try {
-                $event = \Stripe\Webhook::constructEvent(
-                    $payload,
-                    $sig_header,
-                    $webhook_secret
-                );
-            } catch (\UnexpectedValueException $e) {
-                error_log('Stripe CLI Demo: Invalid payload - ' . $e->getMessage());
-                return new WP_REST_Response(array('error' => 'Invalid payload'), 400);
-            } catch (\Stripe\Exception\SignatureVerificationException $e) {
-                error_log('Stripe CLI Demo: Invalid signature - ' . $e->getMessage());
-                return new WP_REST_Response(array('error' => 'Invalid signature'), 400);
-            }
+        try {
+            $event = \Stripe\Webhook::constructEvent(
+                $payload,
+                $sig_header,
+                $webhook_secret
+            );
+        } catch (\UnexpectedValueException $e) {
+            $this->debug_log('Invalid payload - ' . $e->getMessage());
+            return new WP_REST_Response(array('error' => 'Invalid payload'), 400);
+        } catch (\Stripe\Exception\SignatureVerificationException $e) {
+            $this->debug_log('Invalid signature - ' . $e->getMessage());
+            return new WP_REST_Response(array('error' => 'Invalid signature'), 400);
         }
 
         // Log the event
@@ -114,7 +119,7 @@ class Stripe_CLI_Demo_Webhook {
         // Save back
         update_option('stripe_cli_demo_webhook_events', $events);
 
-        error_log('Stripe CLI Demo: Logged event ' . $log_entry['event_type']);
+        $this->debug_log('Logged event ' . $log_entry['event_type']);
     }
 
     /**
@@ -131,32 +136,32 @@ class Stripe_CLI_Demo_Webhook {
             switch ($type) {
                 case 'checkout.session.completed':
                     $events[0]['status'] = 'processed';
-                    error_log('Stripe CLI Demo: Checkout completed - ' . ($event_data->data->object->id ?? 'unknown'));
+                    $this->debug_log('Checkout completed - ' . ($event_data->data->object->id ?? 'unknown'));
                     break;
 
                 case 'payment_intent.succeeded':
                     $events[0]['status'] = 'processed';
-                    error_log('Stripe CLI Demo: Payment succeeded - ' . ($event_data->data->object->id ?? 'unknown'));
+                    $this->debug_log('Payment succeeded - ' . ($event_data->data->object->id ?? 'unknown'));
                     break;
 
                 case 'payment_intent.created':
                     $events[0]['status'] = 'processed';
-                    error_log('Stripe CLI Demo: Payment intent created');
+                    $this->debug_log('Payment intent created');
                     break;
 
                 case 'charge.succeeded':
                     $events[0]['status'] = 'processed';
-                    error_log('Stripe CLI Demo: Charge succeeded');
+                    $this->debug_log('Charge succeeded');
                     break;
 
                 case 'customer.created':
                     $events[0]['status'] = 'processed';
-                    error_log('Stripe CLI Demo: Customer created');
+                    $this->debug_log('Customer created');
                     break;
 
                 default:
                     $events[0]['status'] = 'unhandled';
-                    error_log('Stripe CLI Demo: Unhandled event type - ' . $type);
+                    $this->debug_log('Unhandled event type - ' . $type);
             }
 
             update_option('stripe_cli_demo_webhook_events', $events);

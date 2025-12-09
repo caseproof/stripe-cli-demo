@@ -20,6 +20,7 @@ class Stripe_CLI_Demo_Admin_Pages {
 
     private function __construct() {
         add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts'));
+        add_action('wp_ajax_stripe_cli_demo_get_events', array($this, 'ajax_get_events'));
     }
 
     /**
@@ -224,11 +225,81 @@ class Stripe_CLI_Demo_Admin_Pages {
         </div>
 
         <script>
-            // Auto-refresh every 5 seconds
-            setTimeout(function() {
-                location.reload();
-            }, 5000);
+            // AJAX polling for events (avoids full page reload)
+            (function($) {
+                var refreshInterval = 10000; // 10 seconds
+                var eventsContainer = $('#webhook-events-container');
+
+                function refreshEvents() {
+                    $.ajax({
+                        url: ajaxurl,
+                        type: 'POST',
+                        data: {
+                            action: 'stripe_cli_demo_get_events',
+                            nonce: '<?php echo wp_create_nonce('stripe_cli_demo_events'); ?>'
+                        },
+                        success: function(response) {
+                            if (response.success && response.data.html) {
+                                eventsContainer.html(response.data.html);
+                            }
+                        },
+                        complete: function() {
+                            setTimeout(refreshEvents, refreshInterval);
+                        }
+                    });
+                }
+
+                // Start polling after initial interval
+                setTimeout(refreshEvents, refreshInterval);
+            })(jQuery);
         </script>
         <?php
+    }
+
+    /**
+     * AJAX handler to get events HTML
+     */
+    public function ajax_get_events() {
+        // Verify nonce
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '';
+        if (empty($nonce) || !wp_verify_nonce($nonce, 'stripe_cli_demo_events')) {
+            wp_send_json_error(array('message' => 'Invalid security token'));
+        }
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => 'Unauthorized'));
+        }
+
+        $events = get_option('stripe_cli_demo_webhook_events', array());
+
+        ob_start();
+        if (empty($events)): ?>
+            <div class="no-events">
+                <h2><?php _e('No webhook events yet', 'stripe-cli-demo'); ?></h2>
+                <p><?php _e('Make a test purchase and watch events appear here!', 'stripe-cli-demo'); ?></p>
+                <p style="margin-top: 20px;">
+                    <?php _e('Make sure', 'stripe-cli-demo'); ?> <code>stripe listen</code> <?php _e('is running in your terminal.', 'stripe-cli-demo'); ?>
+                </p>
+            </div>
+        <?php else:
+            foreach ($events as $event): ?>
+                <div class="event-card">
+                    <div class="event-header">
+                        <span class="event-type"><?php echo esc_html($event['event_type']); ?></span>
+                        <span class="event-time"><?php echo esc_html($event['timestamp']); ?></span>
+                    </div>
+                    <div class="event-id">ID: <?php echo esc_html($event['event_id']); ?></div>
+                    <span class="event-status status-<?php echo esc_attr($event['status']); ?>">
+                        <?php echo esc_html($event['status']); ?>
+                    </span>
+                    <div class="event-data">
+                        <pre><?php echo esc_html(json_encode($event['data'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)); ?></pre>
+                    </div>
+                </div>
+            <?php endforeach;
+        endif;
+        $html = ob_get_clean();
+
+        wp_send_json_success(array('html' => $html));
     }
 }

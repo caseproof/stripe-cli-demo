@@ -846,14 +846,24 @@ class Stripe_CLI_Demo_Wizard {
             wp_send_json_error(array('message' => 'Unauthorized'));
         }
 
-        $data = isset($_POST['data']) ? $_POST['data'] : array();
-        $step = isset($data['step']) ? $data['step'] : '';
+        $data = isset($_POST['data']) && is_array($_POST['data']) ? $_POST['data'] : array();
+        $step = isset($data['step']) ? sanitize_text_field($data['step']) : '';
 
         if ($step === '1' || $step === 1) {
+            // Validate keys exist
+            if (!isset($data['publishable_key']) || !isset($data['secret_key'])) {
+                wp_send_json_error(array('message' => 'Both API keys are required'));
+            }
+
             $publishable_key = sanitize_text_field($data['publishable_key']);
             $secret_key = sanitize_text_field($data['secret_key']);
 
-            // Validate keys
+            // Validate keys are not empty
+            if (empty($publishable_key) || empty($secret_key)) {
+                wp_send_json_error(array('message' => 'Both API keys are required'));
+            }
+
+            // Validate key format
             if (strpos($publishable_key, 'pk_test_') !== 0) {
                 wp_send_json_error(array('message' => 'Publishable key must start with pk_test_'));
             }
@@ -866,7 +876,16 @@ class Stripe_CLI_Demo_Wizard {
         }
 
         if ($step === '3' || $step === 3) {
+            // Validate webhook secret exists
+            if (!isset($data['webhook_secret'])) {
+                wp_send_json_error(array('message' => 'Webhook secret is required'));
+            }
+
             $webhook_secret = sanitize_text_field($data['webhook_secret']);
+
+            if (empty($webhook_secret)) {
+                wp_send_json_error(array('message' => 'Webhook secret is required'));
+            }
 
             if (strpos($webhook_secret, 'whsec_') !== 0) {
                 wp_send_json_error(array('message' => 'Webhook secret must start with whsec_'));

@@ -26,8 +26,9 @@ class Stripe_CLI_Demo_Checkout {
      * Create Stripe Checkout Session via AJAX
      */
     public function create_checkout_session() {
-        // Verify nonce
-        if (!wp_verify_nonce($_POST['nonce'], 'stripe_cli_demo_nonce')) {
+        // Verify nonce exists and is valid
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '';
+        if (empty($nonce) || !wp_verify_nonce($nonce, 'stripe_cli_demo_nonce')) {
             wp_send_json_error(array('message' => 'Invalid security token'));
         }
 
