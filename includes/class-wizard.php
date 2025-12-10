@@ -270,8 +270,8 @@ class Stripe_CLI_Demo_Wizard {
                             </button>
                             <p style="margin-top: 15px;">
                                 <?php _e('Then check the', 'stripe-cli-demo'); ?>
-                                <a href="<?php echo admin_url('admin.php?page=stripe-cli-demo-events'); ?>" target="_blank"><?php _e('Webhook Events', 'stripe-cli-demo'); ?></a>
-                                <?php _e('page to see if it was received.', 'stripe-cli-demo'); ?>
+                                <a href="<?php echo admin_url('admin.php?page=stripe-cli-demo#webhook-events'); ?>" target="_blank"><?php _e('Webhook Events', 'stripe-cli-demo'); ?></a>
+                                <?php _e('section to see if it was received.', 'stripe-cli-demo'); ?>
                             </p>
                         </div>
 
@@ -291,9 +291,6 @@ class Stripe_CLI_Demo_Wizard {
                             <div class="complete-actions">
                                 <a href="<?php echo admin_url('admin.php?page=stripe-cli-demo'); ?>" class="button button-primary button-hero">
                                     <?php _e('Go to Demo Store', 'stripe-cli-demo'); ?>
-                                </a>
-                                <a href="<?php echo admin_url('admin.php?page=stripe-cli-demo-events'); ?>" class="button button-secondary">
-                                    <?php _e('View Webhook Events', 'stripe-cli-demo'); ?>
                                 </a>
                             </div>
 

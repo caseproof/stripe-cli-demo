@@ -47,16 +47,6 @@ class Stripe_CLI_Demo_Settings {
             'stripe-cli-demo-settings',
             array($this, 'render_settings_page')
         );
-
-        // Webhook Events submenu
-        add_submenu_page(
-            'stripe-cli-demo',
-            __('Webhook Events', 'stripe-cli-demo'),
-            __('Webhook Events', 'stripe-cli-demo'),
-            'manage_options',
-            'stripe-cli-demo-events',
-            array('Stripe_CLI_Demo_Admin_Pages', 'render_events_page')
-        );
     }
 
     /**
@@ -176,9 +166,15 @@ class Stripe_CLI_Demo_Settings {
                placeholder="whsec_..."
         />
         <p class="description">
-            <?php _e('Get this from the Stripe CLI when you run:', 'stripe-cli-demo'); ?><br>
-            <code>stripe listen --forward-to <?php echo esc_url(home_url('/wp-json/stripe-cli-demo/v1/webhook')); ?></code>
+            <?php _e('Get this from the Stripe CLI when you run:', 'stripe-cli-demo'); ?>
         </p>
+        <?php $cmd = 'stripe listen --forward-to ' . esc_url(home_url('/wp-json/stripe-cli-demo/v1/webhook')); ?>
+        <div class="command-wrapper">
+            <pre><?php echo $cmd; ?></pre>
+            <button type="button" class="button copy-btn" data-copy="<?php echo esc_attr($cmd); ?>">
+                <?php _e('Copy', 'stripe-cli-demo'); ?>
+            </button>
+        </div>
         <?php
     }
 
@@ -200,29 +196,6 @@ class Stripe_CLI_Demo_Settings {
                 submit_button(__('Save Settings', 'stripe-cli-demo'));
                 ?>
             </form>
-
-            <hr style="margin: 30px 0;">
-
-            <h2><?php _e('Quick Start Guide', 'stripe-cli-demo'); ?></h2>
-
-            <div class="card" style="max-width: 800px; padding: 20px;">
-                <h3><?php _e('1. Start the Stripe CLI Listener', 'stripe-cli-demo'); ?></h3>
-                <p><?php _e('In your terminal, run:', 'stripe-cli-demo'); ?></p>
-                <pre style="background: #1a1a2e; color: #4ade80; padding: 15px; border-radius: 6px; overflow-x: auto;">stripe listen --forward-to <?php echo esc_url(home_url('/wp-json/stripe-cli-demo/v1/webhook')); ?></pre>
-
-                <h3 style="margin-top: 20px;"><?php _e('2. For Debugging (JSON Output)', 'stripe-cli-demo'); ?></h3>
-                <pre style="background: #1a1a2e; color: #4ade80; padding: 15px; border-radius: 6px; overflow-x: auto;">stripe listen --forward-to <?php echo esc_url(home_url('/wp-json/stripe-cli-demo/v1/webhook')); ?> --format JSON</pre>
-
-                <h3 style="margin-top: 20px;"><?php _e('3. Copy the Webhook Secret', 'stripe-cli-demo'); ?></h3>
-                <p><?php _e('When the CLI starts, it shows a webhook signing secret (whsec_...). Copy that and paste it in the Webhook Secret field above.', 'stripe-cli-demo'); ?></p>
-
-                <h3 style="margin-top: 20px;"><?php _e('4. Test It!', 'stripe-cli-demo'); ?></h3>
-                <p>
-                    <a href="<?php echo admin_url('admin.php?page=stripe-cli-demo'); ?>" class="button button-primary">
-                        <?php _e('Go to Demo Store', 'stripe-cli-demo'); ?>
-                    </a>
-                </p>
-            </div>
         </div>
         <?php
     }

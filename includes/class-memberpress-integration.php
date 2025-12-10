@@ -31,20 +31,42 @@ class Stripe_CLI_Demo_MemberPress {
         add_action('wp_ajax_stripe_cli_demo_get_mepr_events', array($this, 'ajax_get_mepr_events'));
         add_action('wp_ajax_stripe_cli_demo_clear_mepr_events', array($this, 'ajax_clear_mepr_events'));
 
-        // Hook into MemberPress transaction events
-        add_action('mepr-txn-store', array($this, 'on_transaction_store'), 10, 1);
+        // Hook into MemberPress transaction events - try both underscore and dash versions
+        add_action('mepr_txn_store', array($this, 'on_transaction_store'), 10, 2);
+        add_action('mepr-txn-store', array($this, 'on_transaction_store'), 10, 2);
+        add_action('mepr_txn_status_complete', array($this, 'on_transaction_complete'), 10, 1);
         add_action('mepr-txn-status-complete', array($this, 'on_transaction_complete'), 10, 1);
+        add_action('mepr_txn_status_failed', array($this, 'on_transaction_failed'), 10, 1);
         add_action('mepr-txn-status-failed', array($this, 'on_transaction_failed'), 10, 1);
+        add_action('mepr_txn_status_refunded', array($this, 'on_transaction_refunded'), 10, 1);
         add_action('mepr-txn-status-refunded', array($this, 'on_transaction_refunded'), 10, 1);
 
         // Hook into MemberPress subscription events
+        add_action('mepr_event_subscription_created', array($this, 'on_subscription_created'), 10, 1);
         add_action('mepr-event-subscription-created', array($this, 'on_subscription_created'), 10, 1);
+        add_action('mepr_event_subscription_stopped', array($this, 'on_subscription_stopped'), 10, 1);
         add_action('mepr-event-subscription-stopped', array($this, 'on_subscription_stopped'), 10, 1);
+        add_action('mepr_event_subscription_paused', array($this, 'on_subscription_paused'), 10, 1);
         add_action('mepr-event-subscription-paused', array($this, 'on_subscription_paused'), 10, 1);
+        add_action('mepr_event_subscription_resumed', array($this, 'on_subscription_resumed'), 10, 1);
         add_action('mepr-event-subscription-resumed', array($this, 'on_subscription_resumed'), 10, 1);
 
         // Hook into MemberPress member events
+        add_action('mepr_event_member_signup_completed', array($this, 'on_member_signup'), 10, 1);
         add_action('mepr-event-member-signup-completed', array($this, 'on_member_signup'), 10, 1);
+
+        // Also hook into the Stripe-specific hooks
+        add_action('mepr_stripe_checkout_pending', array($this, 'on_stripe_checkout_pending'), 10, 2);
+        add_action('mepr_stripe_subscription_created', array($this, 'on_stripe_subscription_created'), 10, 2);
+        add_action('mepr_stripe_payment_failed', array($this, 'on_stripe_payment_failed'), 10, 1);
+
+        // Debug: Log ALL actions that start with 'mepr' to see what's firing
+        add_action('all', array($this, 'debug_all_mepr_hooks'), 10, 10);
+
+        $this->debug_log('MemberPress integration initialized');
+
+        // Debug: Verify hooks are registered
+        add_action('init', array($this, 'debug_registered_hooks'), 999);
     }
 
     /**
@@ -116,11 +138,12 @@ class Stripe_CLI_Demo_MemberPress {
     public function add_memberpress_submenu() {
         add_submenu_page(
             'stripe-cli-demo',
-            __('MemberPress Integration', 'stripe-cli-demo'),
-            __('MemberPress', 'stripe-cli-demo'),
+            __('MemberPress Events', 'stripe-cli-demo'),
+            __('MemberPress Events', 'stripe-cli-demo'),
             'manage_options',
             'stripe-cli-demo-memberpress',
-            array($this, 'render_memberpress_page')
+            array($this, 'render_memberpress_page'),
+            1  // Position: after main menu, before settings
         );
     }
 
@@ -166,101 +189,28 @@ class Stripe_CLI_Demo_MemberPress {
         $stripe_gateways = $this->get_stripe_gateways();
         ?>
         <div class="wrap stripe-cli-demo-wrap">
-            <h1><?php _e('MemberPress + Stripe Webhooks', 'stripe-cli-demo'); ?></h1>
-            <p class="description"><?php _e('Monitor MemberPress Stripe webhook events and transactions', 'stripe-cli-demo'); ?></p>
-
-            <div class="mepr-status-cards" style="display: flex; gap: 20px; margin: 20px 0;">
-                <div class="status-card" style="background: <?php echo $mepr_active ? '#d4edda' : '#f8d7da'; ?>; padding: 15px 25px; border-radius: 8px;">
-                    <strong><?php _e('MemberPress', 'stripe-cli-demo'); ?></strong><br>
-                    <?php echo $mepr_active ? '✓ ' . __('Active', 'stripe-cli-demo') . ' (v' . MEPR_VERSION . ')' : '✗ ' . __('Not Active', 'stripe-cli-demo'); ?>
-                </div>
-
-                <div class="status-card" style="background: <?php echo $stripe_active ? '#d4edda' : '#f8d7da'; ?>; padding: 15px 25px; border-radius: 8px;">
-                    <strong><?php _e('Stripe Gateway', 'stripe-cli-demo'); ?></strong><br>
-                    <?php echo $stripe_active ? '✓ ' . __('Configured', 'stripe-cli-demo') : '✗ ' . __('Not Configured', 'stripe-cli-demo'); ?>
-                </div>
-            </div>
+            <h1><?php _e('MemberPress Events', 'stripe-cli-demo'); ?></h1>
+            <p class="description"><?php _e('Monitor MemberPress Stripe transactions and webhook events', 'stripe-cli-demo'); ?></p>
 
             <?php if (!$mepr_active): ?>
                 <div class="notice notice-error">
-                    <p><?php _e('MemberPress is not active. Please install and activate MemberPress to use this integration.', 'stripe-cli-demo'); ?></p>
+                    <p>
+                        <strong><?php _e('MemberPress Not Active!', 'stripe-cli-demo'); ?></strong>
+                        <?php _e('Please install and activate MemberPress to use this integration.', 'stripe-cli-demo'); ?>
+                    </p>
                 </div>
             <?php elseif (!$stripe_active): ?>
                 <div class="notice notice-warning">
-                    <p><?php _e('Stripe Gateway is not configured in MemberPress. Go to MemberPress → Settings → Payments to set up Stripe.', 'stripe-cli-demo'); ?></p>
+                    <p>
+                        <strong><?php _e('Stripe Gateway Not Configured!', 'stripe-cli-demo'); ?></strong>
+                        <?php _e('Go to MemberPress → Settings → Payments to set up Stripe.', 'stripe-cli-demo'); ?>
+                    </p>
                 </div>
             <?php else: ?>
-                <?php $this->render_webhook_info($stripe_gateways); ?>
-                <?php $this->render_mepr_events(); ?>
-                <?php $this->render_recent_transactions(); ?>
-                <?php $this->render_membership_products(); ?>
-            <?php endif; ?>
-        </div>
-        <?php
-    }
-
-    /**
-     * Render webhook info section
-     */
-    private function render_webhook_info($stripe_gateways) {
-        ?>
-        <div class="info-box" style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-            <h3><?php _e('MemberPress Webhook Endpoints', 'stripe-cli-demo'); ?></h3>
-            <p><?php _e('Forward Stripe webhooks to MemberPress using these URLs:', 'stripe-cli-demo'); ?></p>
-
-            <?php foreach ($stripe_gateways as $gateway): ?>
-                <?php $webhook_url = $this->get_webhook_url($gateway); ?>
-                <div style="margin: 15px 0; padding: 15px; background: #f5f5f5; border-radius: 4px;">
-                    <strong><?php echo esc_html($gateway->label); ?></strong>
-                    <span style="color: #666; font-size: 12px;">(<?php echo esc_html($gateway->id); ?>)</span>
-
-                    <pre style="margin: 10px 0; padding: 10px; background: #1e1e1e; color: #d4d4d4; border-radius: 4px; overflow-x: auto;">stripe listen --forward-to <?php echo esc_url($webhook_url); ?></pre>
-
-                    <button type="button" class="button copy-btn" data-copy="stripe listen --forward-to <?php echo esc_url($webhook_url); ?>">
-                        <?php _e('Copy Command', 'stripe-cli-demo'); ?>
-                    </button>
-
-                    <button type="button" class="button copy-btn" data-copy="stripe listen --forward-to <?php echo esc_url($webhook_url); ?> --format JSON" style="margin-left: 5px;">
-                        <?php _e('Copy Debug Command', 'stripe-cli-demo'); ?>
-                    </button>
+                <div class="stripe-cli-demo-container">
+                    <?php $this->render_mepr_events(); ?>
                 </div>
-            <?php endforeach; ?>
-
-            <h4 style="margin-top: 20px;"><?php _e('Webhook Events MemberPress Handles', 'stripe-cli-demo'); ?></h4>
-            <table class="widefat" style="margin-top: 10px;">
-                <thead>
-                    <tr>
-                        <th><?php _e('Stripe Event', 'stripe-cli-demo'); ?></th>
-                        <th><?php _e('MemberPress Action', 'stripe-cli-demo'); ?></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><code>checkout.session.completed</code></td>
-                        <td><?php _e('Create subscription, activate membership', 'stripe-cli-demo'); ?></td>
-                    </tr>
-                    <tr>
-                        <td><code>invoice.payment_succeeded</code></td>
-                        <td><?php _e('Renew membership, record payment', 'stripe-cli-demo'); ?></td>
-                    </tr>
-                    <tr>
-                        <td><code>invoice.payment_failed</code></td>
-                        <td><?php _e('Mark payment as failed', 'stripe-cli-demo'); ?></td>
-                    </tr>
-                    <tr>
-                        <td><code>customer.subscription.deleted</code></td>
-                        <td><?php _e('Cancel membership', 'stripe-cli-demo'); ?></td>
-                    </tr>
-                    <tr>
-                        <td><code>charge.refunded</code></td>
-                        <td><?php _e('Process refund', 'stripe-cli-demo'); ?></td>
-                    </tr>
-                    <tr>
-                        <td><code>charge.failed</code></td>
-                        <td><?php _e('Record payment failure', 'stripe-cli-demo'); ?></td>
-                    </tr>
-                </tbody>
-            </table>
+            <?php endif; ?>
         </div>
         <?php
     }
@@ -271,11 +221,11 @@ class Stripe_CLI_Demo_MemberPress {
     private function render_mepr_events() {
         $events = get_option('stripe_cli_demo_mepr_events', array());
         ?>
-        <div class="info-box" style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="margin: 0;"><?php _e('MemberPress Events Log', 'stripe-cli-demo'); ?></h3>
-                <div>
-                    <span class="auto-refresh-indicator" style="color: #666; margin-right: 10px;">
+        <div class="events-section">
+            <div class="events-header">
+                <h3><?php _e('MemberPress Events Log', 'stripe-cli-demo'); ?></h3>
+                <div class="events-actions">
+                    <span class="auto-refresh-indicator">
                         <?php _e('Auto-refreshing every 10s', 'stripe-cli-demo'); ?>
                     </span>
                     <button type="button" class="button" id="clear-mepr-events">
@@ -284,7 +234,7 @@ class Stripe_CLI_Demo_MemberPress {
                 </div>
             </div>
 
-            <div id="mepr-events-container" style="margin-top: 15px;">
+            <div id="mepr-events-container">
                 <?php echo $this->get_events_html($events); ?>
             </div>
         </div>
@@ -342,8 +292,8 @@ class Stripe_CLI_Demo_MemberPress {
      */
     private function get_events_html($events) {
         if (empty($events)) {
-            return '<div class="no-events" style="text-align: center; padding: 40px; color: #666;">
-                <h4>' . __('No MemberPress events yet', 'stripe-cli-demo') . '</h4>
+            return '<div class="no-events">
+                <h2>' . __('No MemberPress events yet', 'stripe-cli-demo') . '</h2>
                 <p>' . __('Make a test purchase through MemberPress and watch events appear here.', 'stripe-cli-demo') . '</p>
                 <p>' . __('Make sure <code>stripe listen</code> is running with the MemberPress webhook URL.', 'stripe-cli-demo') . '</p>
             </div>';
@@ -352,29 +302,28 @@ class Stripe_CLI_Demo_MemberPress {
         $html = '';
         foreach ($events as $event) {
             $status_class = isset($event['status']) ? 'status-' . $event['status'] : '';
-            $html .= '<div class="event-card" style="background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 6px; padding: 15px; margin-bottom: 10px;">';
-            $html .= '<div class="event-header" style="display: flex; justify-content: space-between; margin-bottom: 8px;">';
-            $html .= '<span class="event-type" style="font-weight: 600; color: #1e3a5f;">' . esc_html($event['event_type']) . '</span>';
-            $html .= '<span class="event-time" style="color: #666; font-size: 12px;">' . esc_html($event['timestamp']) . '</span>';
+            $html .= '<div class="event-card">';
+            $html .= '<div class="event-header">';
+            $html .= '<span class="event-type">' . esc_html($event['event_type']) . '</span>';
+            $html .= '<span class="event-time">' . esc_html($event['timestamp']) . '</span>';
             $html .= '</div>';
 
             if (!empty($event['user_email'])) {
-                $html .= '<div style="font-size: 13px; color: #555; margin-bottom: 5px;">User: ' . esc_html($event['user_email']) . '</div>';
+                $html .= '<div class="event-id">User: ' . esc_html($event['user_email']) . '</div>';
             }
             if (!empty($event['product_name'])) {
-                $html .= '<div style="font-size: 13px; color: #555; margin-bottom: 5px;">Product: ' . esc_html($event['product_name']) . '</div>';
+                $html .= '<div class="event-id">Product: ' . esc_html($event['product_name']) . '</div>';
             }
             if (!empty($event['amount'])) {
-                $html .= '<div style="font-size: 13px; color: #555; margin-bottom: 5px;">Amount: $' . esc_html(number_format($event['amount'], 2)) . '</div>';
+                $html .= '<div class="event-id">Amount: $' . esc_html(number_format($event['amount'], 2)) . '</div>';
             }
 
-            $html .= '<span class="event-status ' . esc_attr($status_class) . '" style="display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; background: #e0e0e0;">' . esc_html($event['status'] ?? 'logged') . '</span>';
+            $html .= '<span class="event-status ' . esc_attr($status_class) . '">' . esc_html($event['status'] ?? 'logged') . '</span>';
 
             if (!empty($event['data'])) {
-                $html .= '<details style="margin-top: 10px;">';
-                $html .= '<summary style="cursor: pointer; color: #666; font-size: 12px;">' . __('View Details', 'stripe-cli-demo') . '</summary>';
-                $html .= '<pre style="margin-top: 10px; padding: 10px; background: #1e1e1e; color: #d4d4d4; border-radius: 4px; font-size: 11px; overflow-x: auto;">' . esc_html(json_encode($event['data'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)) . '</pre>';
-                $html .= '</details>';
+                $html .= '<div class="event-data">';
+                $html .= '<pre>' . esc_html(json_encode($event['data'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)) . '</pre>';
+                $html .= '</div>';
             }
 
             $html .= '</div>';
@@ -390,10 +339,12 @@ class Stripe_CLI_Demo_MemberPress {
         $nonce = isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '';
         if (empty($nonce) || !wp_verify_nonce($nonce, 'stripe_cli_demo_nonce')) {
             wp_send_json_error(array('message' => 'Invalid security token'));
+            return;
         }
 
         if (!current_user_can('manage_options')) {
             wp_send_json_error(array('message' => 'Unauthorized'));
+            return;
         }
 
         $events = get_option('stripe_cli_demo_mepr_events', array());
@@ -407,10 +358,12 @@ class Stripe_CLI_Demo_MemberPress {
         $nonce = isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '';
         if (empty($nonce) || !wp_verify_nonce($nonce, 'stripe_cli_demo_nonce')) {
             wp_send_json_error(array('message' => 'Invalid security token'));
+            return;
         }
 
         if (!current_user_can('manage_options')) {
             wp_send_json_error(array('message' => 'Unauthorized'));
+            return;
         }
 
         update_option('stripe_cli_demo_mepr_events', array());
@@ -528,7 +481,8 @@ class Stripe_CLI_Demo_MemberPress {
                         <?php
                         $mepr_product = new MeprProduct($product->ID);
                         $price = $mepr_product->price;
-                        $is_recurring = $mepr_product->is_recurring();
+                        $is_one_time = $mepr_product->is_one_time_payment();
+                        $is_recurring = !$is_one_time;
                         $period = $is_recurring ? $mepr_product->period . ' ' . $mepr_product->period_type : '';
                         ?>
                         <div style="background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 6px; padding: 15px; text-align: center;">
@@ -623,19 +577,73 @@ stripe trigger charge.refunded</pre>
      * Hook: Transaction stored
      */
     public function on_transaction_store($txn) {
-        if (strpos($txn->gateway, 'stripe') === false) {
+        $this->debug_log('on_transaction_store called with gateway: ' . (isset($txn->gateway) ? $txn->gateway : 'NOT SET'));
+
+        if (!$this->is_stripe_transaction($txn)) {
+            $this->debug_log('Skipping - not a Stripe transaction');
             return;
         }
 
+        $this->debug_log('Processing Stripe transaction');
         $details = $this->get_txn_details($txn);
         $this->log_event('mepr_txn_store', $details);
+    }
+
+    /**
+     * Check if a transaction uses a Stripe gateway
+     */
+    private function is_stripe_transaction($txn) {
+        if (!isset($txn->gateway) || empty($txn->gateway)) {
+            return false;
+        }
+
+        // Try to get the payment method object
+        if (method_exists($txn, 'payment_method')) {
+            $pm = $txn->payment_method();
+            if ($pm && $pm instanceof MeprStripeGateway) {
+                $this->debug_log('Detected Stripe gateway via payment_method()');
+                return true;
+            }
+        }
+
+        // Fallback: Check MeprOptions for the gateway
+        if (class_exists('MeprOptions')) {
+            $mepr_options = MeprOptions::fetch();
+            $pm = $mepr_options->payment_method($txn->gateway);
+            if ($pm && $pm instanceof MeprStripeGateway) {
+                $this->debug_log('Detected Stripe gateway via MeprOptions');
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if a subscription uses a Stripe gateway
+     */
+    private function is_stripe_subscription($sub) {
+        if (!$sub || !isset($sub->gateway) || empty($sub->gateway)) {
+            return false;
+        }
+
+        // Check MeprOptions for the gateway
+        if (class_exists('MeprOptions')) {
+            $mepr_options = MeprOptions::fetch();
+            $pm = $mepr_options->payment_method($sub->gateway);
+            if ($pm && $pm instanceof MeprStripeGateway) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
      * Hook: Transaction complete
      */
     public function on_transaction_complete($txn) {
-        if (strpos($txn->gateway, 'stripe') === false) {
+        if (!$this->is_stripe_transaction($txn)) {
             return;
         }
 
@@ -648,7 +656,7 @@ stripe trigger charge.refunded</pre>
      * Hook: Transaction failed
      */
     public function on_transaction_failed($txn) {
-        if (strpos($txn->gateway, 'stripe') === false) {
+        if (!$this->is_stripe_transaction($txn)) {
             return;
         }
 
@@ -661,7 +669,7 @@ stripe trigger charge.refunded</pre>
      * Hook: Transaction refunded
      */
     public function on_transaction_refunded($txn) {
-        if (strpos($txn->gateway, 'stripe') === false) {
+        if (!$this->is_stripe_transaction($txn)) {
             return;
         }
 
@@ -676,7 +684,7 @@ stripe trigger charge.refunded</pre>
     public function on_subscription_created($event) {
         $sub = $event->get_data();
 
-        if (!$sub || strpos($sub->gateway, 'stripe') === false) {
+        if (!$this->is_stripe_subscription($sub)) {
             return;
         }
 
@@ -702,7 +710,7 @@ stripe trigger charge.refunded</pre>
     public function on_subscription_stopped($event) {
         $sub = $event->get_data();
 
-        if (!$sub || strpos($sub->gateway, 'stripe') === false) {
+        if (!$this->is_stripe_subscription($sub)) {
             return;
         }
 
@@ -727,7 +735,7 @@ stripe trigger charge.refunded</pre>
     public function on_subscription_paused($event) {
         $sub = $event->get_data();
 
-        if (!$sub || strpos($sub->gateway, 'stripe') === false) {
+        if (!$this->is_stripe_subscription($sub)) {
             return;
         }
 
@@ -752,7 +760,7 @@ stripe trigger charge.refunded</pre>
     public function on_subscription_resumed($event) {
         $sub = $event->get_data();
 
-        if (!$sub || strpos($sub->gateway, 'stripe') === false) {
+        if (!$this->is_stripe_subscription($sub)) {
             return;
         }
 
@@ -783,5 +791,98 @@ stripe trigger charge.refunded</pre>
 
         $details = $this->get_txn_details($txn);
         $this->log_event('mepr_member_signup', $details);
+    }
+
+    /**
+     * Hook: Stripe checkout pending (fired by MeprStripeGateway)
+     */
+    public function on_stripe_checkout_pending($txn, $usr) {
+        $this->debug_log('on_stripe_checkout_pending fired');
+        $details = $this->get_txn_details($txn);
+        $details['user_email'] = $usr->user_email;
+        $this->log_event('mepr_stripe_checkout_pending', $details);
+    }
+
+    /**
+     * Hook: Stripe subscription created (fired by MeprStripeGateway)
+     */
+    public function on_stripe_subscription_created($txn, $sub) {
+        $this->debug_log('on_stripe_subscription_created fired');
+        $user = get_userdata($txn->user_id);
+        $product = get_post($txn->product_id);
+
+        $this->log_event('mepr_stripe_subscription_created', array(
+            'txn_id' => $txn->id,
+            'subscription_id' => $sub->id,
+            'subscr_id' => $sub->subscr_id,
+            'user_id' => $txn->user_id,
+            'user_email' => $user ? $user->user_email : '',
+            'product_id' => $txn->product_id,
+            'product_name' => $product ? $product->post_title : '',
+            'amount' => $txn->total,
+            'status' => $txn->status,
+            'gateway' => $txn->gateway,
+        ));
+    }
+
+    /**
+     * Hook: Stripe payment failed (fired by MeprStripeGateway)
+     */
+    public function on_stripe_payment_failed($payment_intent) {
+        $this->debug_log('on_stripe_payment_failed fired');
+        $this->log_event('mepr_stripe_payment_failed', array(
+            'payment_intent_id' => is_object($payment_intent) ? $payment_intent->id : $payment_intent,
+            'status' => 'failed',
+        ));
+    }
+
+    /**
+     * Debug logging
+     */
+    private function debug_log($message) {
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('Stripe CLI Demo MemberPress: ' . $message);
+        }
+    }
+
+    /**
+     * Debug: Check if our hooks are registered
+     */
+    public function debug_registered_hooks() {
+        global $wp_filter;
+
+        $hooks_to_check = array('mepr_txn_store', 'mepr-txn-store');
+
+        foreach ($hooks_to_check as $hook) {
+            if (isset($wp_filter[$hook])) {
+                $this->debug_log("Hook '$hook' has " . count($wp_filter[$hook]->callbacks) . " priority levels registered");
+                foreach ($wp_filter[$hook]->callbacks as $priority => $callbacks) {
+                    foreach ($callbacks as $id => $callback) {
+                        $this->debug_log("  Priority $priority: $id");
+                    }
+                }
+            } else {
+                $this->debug_log("Hook '$hook' has NO callbacks registered");
+            }
+        }
+    }
+
+    /**
+     * Debug hook to catch all MemberPress-related actions
+     */
+    public function debug_all_mepr_hooks() {
+        $current_action = current_action();
+
+        // Only log mepr-related hooks to avoid spam
+        if (strpos($current_action, 'mepr') === 0 || strpos($current_action, 'mepr-') === 0) {
+            // Skip noisy hooks
+            $skip = array('mepr_db_get_col', 'mepr_db_get_records', 'mepr_db_get_one_record', 'mepr_db_search_in_col');
+            foreach ($skip as $s) {
+                if (strpos($current_action, $s) !== false) {
+                    return;
+                }
+            }
+            $this->debug_log('HOOK FIRED: ' . $current_action);
+        }
     }
 }

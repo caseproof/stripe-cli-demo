@@ -181,6 +181,35 @@ try {
 
 ---
 
+---
+
+### UI Consistency: CSS Classes vs Inline Styles
+**Date:** 2025-12-09
+
+When adding new pages to a WordPress plugin, avoid inline styles. Instead, use existing CSS classes from the main stylesheet. This session unified MemberPress page by replacing inline `style=""` attributes with classes like `.info-box`, `.event-card`, `.events-section`.
+
+**Lesson:** Check admin.css for existing classes before writing new inline styles.
+
+---
+
+### Copy Button Consistency with data-copy Attribute
+**Date:** 2025-12-09
+
+The admin.js file has a centralized `initCopyButtons()` function that looks for `.copy-btn` elements with `data-copy` attributes. Rather than adding inline JavaScript for copy functionality, use this pattern:
+
+```html
+<div class="command-wrapper">
+    <pre><?php echo $cmd; ?></pre>
+    <button type="button" class="button copy-btn" data-copy="<?php echo esc_attr($cmd); ?>">
+        <?php _e('Copy', 'stripe-cli-demo'); ?>
+    </button>
+</div>
+```
+
+**Lesson:** Reuse existing JavaScript patterns rather than adding duplicate handlers.
+
+---
+
 ## Useful Commands Reference
 
 ```bash

@@ -1,0 +1,101 @@
+# Decision Log
+
+## Format
+
+Each decision includes:
+- **Date:** When decided
+- **Decision:** What was chosen
+- **Context:** Why this decision was needed
+- **Alternatives:** What else was considered
+- **Rationale:** Why this option was chosen
+- **Tradeoffs:** What we gave up
+- **Status:** Active, Deprecated, Superseded
+
+---
+
+## Decision 001: Adopt AI-Agent Memory System
+
+**Date:** {{DATE}}
+**Status:** ✅ Active
+
+**Decision:**
+Use the AI-Agent Memory System (STATUS.md, ROADMAP.md, DECISIONS.md, JOURNAL.md) for this project.
+
+**Context:**
+AI-assisted development suffers from session amnesia. Need persistent context across sessions, especially for weekly AI Friday sessions.
+
+**Alternatives Considered:**
+
+1. **No system** (re-explain context every session)
+   - Pros: No overhead
+   - Cons: Waste 15-30 min every session re-explaining
+
+2. **Long conversation history** (replay old messages)
+   - Pros: Complete history
+   - Cons: Grows unbounded, hard to search
+
+3. **AI-Agent Memory System** (chosen)
+   - Pros: Persistent, structured, lightweight
+   - Cons: Requires discipline to update
+
+**Rationale:**
+- Reduces session startup time from 30 min → 5 min
+- Provides structured memory for AI agents
+- Human-readable documentation as byproduct
+- Proven: 6+ month project survival vs 2-4 weeks typical
+
+**Tradeoffs:**
+- ✅ Better AI productivity
+- ✅ Faster session startup
+- ✅ Preserved knowledge
+- ⚠️ Requires discipline (must update files)
+
+**Implementation:**
+- STATUS.md updated every session
+- ROADMAP.md tracked milestones
+- DECISIONS.md logs architectural choices
+- JOURNAL.md captures learnings
+
+**Related:**
+- See docs/AI-AGENT-MEMORY-SYSTEM.md for full documentation
+
+---
+
+## Decision 002: {{DECISION_TITLE}}
+
+**Date:** {{DATE}}
+**Status:** ✅ Active
+
+**Decision:**
+{{WHAT_WAS_DECIDED}}
+
+**Context:**
+{{WHY_THIS_DECISION_WAS_NEEDED}}
+
+**Alternatives Considered:**
+
+1. **{{OPTION_1}}**
+   - Pros: {{PROS}}
+   - Cons: {{CONS}}
+
+2. **{{OPTION_2}}** (chosen)
+   - Pros: {{PROS}}
+   - Cons: {{CONS}}
+
+3. **{{OPTION_3}}**
+   - Pros: {{PROS}}
+   - Cons: {{CONS}}
+
+**Rationale:**
+{{WHY_OPTION_2_WAS_CHOSEN}}
+
+**Tradeoffs:**
+- ❌ {{WHAT_WE_GAVE_UP}}
+- ✅ {{WHAT_WE_GAINED}}
+
+**Implementation Details:**
+{{TECHNICAL_DETAILS}}
+
+**Related:**
+- [{{RELATED_FILE}}]({{LINK}})
+- Decision {{RELATED_DECISION_NUMBER}}

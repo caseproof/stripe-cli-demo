@@ -1,0 +1,35 @@
+# Project Status
+
+**Last Updated:** {{DATE}} {{TIME}}
+**Current Phase:** {{MILESTONE_NAME}}
+**Current Task:** {{CURRENT_TASK}}
+
+## What I'm Working On
+
+{{CURRENT_WORK_DESCRIPTION}}
+
+Currently implementing:
+- {{FEATURE_1}}
+- {{FEATURE_2}}
+- {{FEATURE_3}}
+
+## Recent Progress
+
+- ✅ {{COMPLETED_ITEM_1}}
+- ✅ {{COMPLETED_ITEM_2}}
+- ⏳ {{IN_PROGRESS_ITEM}} ({{PERCENTAGE}}% complete)
+
+## Current Blockers
+
+{{BLOCKERS_OR_NONE}}
+
+## Next Steps
+
+1. {{NEXT_STEP_1}}
+2. {{NEXT_STEP_2}}
+3. {{NEXT_STEP_3}}
+
+## Context Links
+
+- [{{RELEVANT_DOC_1}}]({{LINK_1}})
+- [{{RELEVANT_DOC_2}}]({{LINK_2}})

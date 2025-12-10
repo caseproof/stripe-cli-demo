@@ -174,3 +174,28 @@ Gate all logging behind WP_DEBUG constant.
 - Must enable WP_DEBUG to see webhook logs
 - Debug output only in development
 - Cleaner production logs
+
+---
+
+## ADR-008: Consolidate Webhook Events to Demo Store Page
+
+**Date:** 2025-12-09
+**Status:** Accepted
+
+### Context
+Originally had separate pages: Demo Store, Webhook Events, MemberPress Events, Settings. User found this confusing and wanted a simpler navigation structure.
+
+### Decision
+Move Webhook Events section to the Demo Store page and remove the separate Webhook Events menu item.
+
+### Rationale
+- Webhook events are directly related to demo purchases
+- Reduces navigation clicks for the primary workflow
+- Demo Store becomes the single destination for testing
+- Anchor link (`#webhook-events`) allows direct navigation from wizard
+
+### Consequences
+- Demo Store page now has: Product card, Test cards, CLI commands, Webhook Events
+- Wizard links updated to use anchor: `admin.php?page=stripe-cli-demo#webhook-events`
+- Menu simplified to: Demo Store → MemberPress Events → Settings
+- MemberPress Events remains separate (different event source)

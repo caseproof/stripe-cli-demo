@@ -1,0 +1,59 @@
+# Roadmap
+
+## Milestone 1: {{MILESTONE_1_NAME}} ⏳ ({{PERCENTAGE}}% complete)
+
+**Goal:** {{MILESTONE_1_GOAL}}
+
+### Prerequisites
+- [x] {{PREREQ_1}}
+- [x] {{PREREQ_2}}
+
+### Tasks
+- [x] {{COMPLETED_TASK}}
+- ⏳ {{IN_PROGRESS_TASK}} ({{PERCENTAGE}}% complete)
+- [ ] {{PENDING_TASK_1}}
+- [ ] {{PENDING_TASK_2}}
+- [ ] {{PENDING_TASK_3}}
+
+### Success Criteria
+- [ ] {{CRITERIA_1}}
+- [ ] {{CRITERIA_2}}
+- [ ] {{CRITERIA_3}}
+
+---
+
+## Milestone 2: {{MILESTONE_2_NAME}} (Not started)
+
+**BLOCKED UNTIL:** Milestone 1 complete
+
+**Goal:** {{MILESTONE_2_GOAL}}
+
+### Tasks
+- [ ] {{TASK_1}}
+- [ ] {{TASK_2}}
+- [ ] {{TASK_3}}
+
+---
+
+## Milestone 3: {{MILESTONE_3_NAME}} (Future)
+
+**BLOCKED UNTIL:** Milestone 2 complete
+
+**Goal:** {{MILESTONE_3_GOAL}}
+
+### Tasks
+- [ ] {{TASK_1}}
+- [ ] {{TASK_2}}
+
+---
+
+## Completed Milestones
+
+### Milestone 0: Project Setup ✅ (Complete)
+
+**Completed:** {{DATE}}
+
+- [x] Repository created
+- [x] Initial file structure
+- [x] Coding standards defined
+- [x] CLAUDE.md created
