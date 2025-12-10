@@ -3,7 +3,7 @@
  * Plugin Name: Stripe CLI Demo
  * Plugin URI: https://github.com/your-repo/stripe-cli-demo
  * Description: A demo plugin to teach developers how to use the Stripe CLI for local webhook testing.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Your Team
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Plugin constants
-define('STRIPE_CLI_DEMO_VERSION', '1.0.0');
+define('STRIPE_CLI_DEMO_VERSION', '1.1.0');
 define('STRIPE_CLI_DEMO_PATH', plugin_dir_path(__FILE__));
 define('STRIPE_CLI_DEMO_URL', plugin_dir_url(__FILE__));
 
@@ -57,6 +57,7 @@ class Stripe_CLI_Demo {
         require_once STRIPE_CLI_DEMO_PATH . 'includes/class-checkout.php';
         require_once STRIPE_CLI_DEMO_PATH . 'includes/class-webhook.php';
         require_once STRIPE_CLI_DEMO_PATH . 'includes/class-wizard.php';
+        require_once STRIPE_CLI_DEMO_PATH . 'includes/class-memberpress-integration.php';
     }
 
     /**
@@ -90,6 +91,9 @@ class Stripe_CLI_Demo {
 
         // Initialize webhook handler
         Stripe_CLI_Demo_Webhook::get_instance();
+
+        // Initialize MemberPress integration (only if MemberPress is active)
+        Stripe_CLI_Demo_MemberPress::get_instance();
     }
 
     /**

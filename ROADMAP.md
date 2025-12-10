@@ -61,16 +61,16 @@ Detailed planning documents available in [`docs/planning/`](docs/planning/).
 - [ ] Write subscription handling examples
 - [ ] Optional: Add examples viewer tab in admin
 
-### Enhancement 4: MemberPress Integration
+### Enhancement 4: MemberPress Integration ✅
 **Planning:** [004-memberpress-integration.md](docs/planning/004-memberpress-integration.md)
-**Priority:** High | **Complexity:** Medium-High
+**Priority:** High | **Complexity:** Medium-High | **Completed:** 2025-12-09
 
-- [ ] Detect MemberPress + Stripe Gateway
-- [ ] Hook into MemberPress webhook processing
-- [ ] Create MemberPress admin page
-- [ ] Display recent MemberPress transactions
-- [ ] List test membership products
-- [ ] Add event filtering for MemberPress events
+- [x] Detect MemberPress + Stripe Gateway
+- [x] Hook into MemberPress webhook processing
+- [x] Create MemberPress admin page
+- [x] Display recent MemberPress transactions
+- [x] List test membership products
+- [x] Separate event storage for MemberPress events
 
 ### Future: WooCommerce Integration
 **Priority:** Low | **Not yet planned**
@@ -92,4 +92,5 @@ Per project principles (YAGNI), the following are intentionally excluded:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.1.0 | 2025-12-09 | MemberPress integration - webhook monitoring |
 | 1.0.0 | 2025-12-09 | Initial release - full plugin functionality |

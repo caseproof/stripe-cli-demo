@@ -3,10 +3,10 @@
 > Last updated: 2025-12-09
 
 ## Current Phase
-**Phase: Complete** - Plugin is fully functional and documented.
+**Phase: Active Development** - MemberPress integration complete.
 
 ## Current Task
-None - Project is in maintenance mode.
+Testing MemberPress integration on memberpress-testing site.
 
 ## Recent Progress
 
@@ -20,6 +20,13 @@ None - Project is in maintenance mode.
 - [x] Documentation complete (README, CLAUDE.md, AGENTS.md)
 - [x] Presentation materials created
 - [x] AI-Agent Memory System installed
+- [x] **MemberPress Integration (v1.1.0)**
+  - Detects MemberPress + Stripe Gateway
+  - Separate MemberPress admin page
+  - Hooks into MemberPress transaction/subscription events
+  - Displays recent Stripe transactions from MemberPress
+  - Lists membership products for testing
+  - Separate event storage (`stripe_cli_demo_mepr_events`)
 
 ## Blockers
 None.
@@ -36,6 +43,7 @@ Teaching tool for Stripe CLI webhook testing. Developers activate it, run `strip
 | `class-webhook.php` | Receives Stripe events |
 | `class-checkout.php` | Creates Stripe Checkout sessions |
 | `class-admin-pages.php` | Demo store + event viewer UI |
+| `class-memberpress-integration.php` | MemberPress webhook monitoring |
 
 ### Recent Changes
 - Switched from page reload to AJAX polling (10s interval)
