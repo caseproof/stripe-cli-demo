@@ -68,9 +68,7 @@
 
         if (status === 'success') {
             $status.removeClass('loading error').addClass('success')
-                   .html('<strong>Payment successful!</strong> Check the <a href="' +
-                         window.location.href.replace(/page=stripe-cli-demo.*/, 'page=stripe-cli-demo-events') +
-                         '">Webhook Events</a> page to see the events received.')
+                   .html('<strong>Payment successful!</strong> Check the <a href="#webhook-events">Webhook Events</a> section below to see the events received.')
                    .show();
 
             // Clean up URL
