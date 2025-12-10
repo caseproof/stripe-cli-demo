@@ -31,17 +31,16 @@ jobs:
         run: |
           mkdir -p build/stripe-cli-demo
 
-          # Copy plugin files
+          # Copy only essential plugin files
           cp -r assets build/stripe-cli-demo/
           cp -r includes build/stripe-cli-demo/
           cp -r vendor build/stripe-cli-demo/
           cp stripe-cli-demo.php build/stripe-cli-demo/
-          cp composer.json build/stripe-cli-demo/
           cp README.md build/stripe-cli-demo/
 
-          # Optional: copy docs if they exist
-          if [ -d "docs" ]; then
-            cp -r docs build/stripe-cli-demo/
+          # Optional: copy LICENSE if it exists
+          if [ -f "LICENSE" ]; then
+            cp LICENSE build/stripe-cli-demo/
           fi
 
       - name: Create ZIP archive
