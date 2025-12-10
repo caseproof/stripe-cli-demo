@@ -16,3 +16,7 @@ Thumbs.db
 
 # Logs
 *.log
+
+# PHPUnit
+.phpunit.result.cache
+coverage/

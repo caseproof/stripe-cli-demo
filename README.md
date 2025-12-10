@@ -30,16 +30,24 @@ This plugin provides a simple demo store with a $1 test product to demonstrate h
 
 ## Installation
 
-1. Download or clone this repository
-2. Copy the `stripe-cli-demo` folder to `wp-content/plugins/`
-3. Run `composer install` in the plugin directory
-4. Activate the plugin in WordPress admin
+### Option 1: Download Release (Recommended)
+
+1. Go to the [Releases page](../../releases)
+2. Download the latest `stripe-cli-demo.zip`
+3. In WordPress admin, go to **Plugins → Add New → Upload Plugin**
+4. Upload the ZIP file and activate
 5. Follow the setup wizard
 
+### Option 2: Clone and Build
+
 ```bash
-cd wp-content/plugins/stripe-cli-demo
-composer install
+cd wp-content/plugins
+git clone https://github.com/your-repo/stripe-cli-demo.git
+cd stripe-cli-demo
+composer install --no-dev
 ```
+
+Then activate the plugin in WordPress admin.
 
 ## Quick Start
 
