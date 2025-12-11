@@ -11,7 +11,7 @@
 ### Testing Stripe Webhooks Locally
 **Introducing the Stripe CLI Demo Plugin**
 
-*[Screenshot: Plugin main page with Demo Store]*
+![2025-12-10_18-13-02](https://github.com/user-attachments/assets/410214ff-ac8f-4667-90a3-14231ccc6960)
 
 ---
 
@@ -57,7 +57,9 @@ Stripe Servers → Stripe CLI (your laptop) → localhost
 | **Webhook Events** | Real-time event viewer with auto-refresh |
 | **Setup Wizard** | Guided configuration in 4 steps |
 
-*[Screenshot: Menu showing Demo Store → MemberPress Events → Settings]*
+![2025-12-10_18-13-02](https://github.com/user-attachments/assets/b54694e2-607e-4dc2-94c0-947a768109e1)
+
+![2025-12-10_18-16-51](https://github.com/user-attachments/assets/69a27ff0-64c9-4d6a-baff-8e52335ed6a7)
 
 **Script:**
 > "This plugin gives you two ways to test. The Demo Store is a simple $1 product that triggers Stripe Checkout — perfect for learning. If you're already using MemberPress, the plugin also monitors those transactions. Everything shows up in the Webhook Events section."
@@ -75,10 +77,10 @@ Stripe Servers → Stripe CLI (your laptop) → localhost
 
 **No command line needed!**
 
-*[Screenshot: GitHub Releases page with ZIP download]*
+![2025-12-10_18-17-54](https://github.com/user-attachments/assets/3f942d7e-2502-481e-9ef3-920da90c4c82)
 
 **Script:**
-> "Installing is simple. Download the ZIP from GitHub Releases — it comes with everything pre-built. Upload it to WordPress like any other plugin. The wizard handles the rest."
+> "Installing is simple. Download the ZIP from GitHub Releases; it includes everything prebuilt. Upload it to WordPress as you would any other plugin. The wizard handles the rest."
 
 ---
 
@@ -91,7 +93,9 @@ Stripe Servers → Stripe CLI (your laptop) → localhost
 3. **Webhook Secret** — Grab the whsec_ from your terminal
 4. **Test** — Verify the connection works
 
-*[Screenshot: Wizard Step 2 with CLI command]*
+![2025-12-10_18-19-01](https://github.com/user-attachments/assets/2fb81423-889d-483d-9c3e-13055bc94836)
+![2025-12-10_18-21-12](https://github.com/user-attachments/assets/bf0b6131-5703-40e3-ad8d-12eb0dcdb7cf)
+![2025-12-10_18-21-37](https://github.com/user-attachments/assets/68a58565-c3b3-4319-9eff-8acd59cd26df)
 
 **Script:**
 > "When you activate the plugin, a setup wizard walks you through everything. Enter your API keys, start the CLI with the provided command, paste in the webhook secret, and test the connection. Takes about 2 minutes."
@@ -102,7 +106,7 @@ Stripe Servers → Stripe CLI (your laptop) → localhost
 
 ### Test Purchases in Seconds
 
-*[Screenshot: Demo Store page showing product card, test cards table, and CLI commands]*
+![2025-12-10_18-23-36](https://github.com/user-attachments/assets/59f17c8e-69ea-465a-ac73-74d2762485a2)
 
 - **$1 Demo Widget** — Click "Buy Now" to test
 - **Test Card Numbers** — Reference table right on the page
@@ -123,7 +127,7 @@ Stripe Servers → Stripe CLI (your laptop) → localhost
 3. Pay with test card `4242 4242 4242 4242`
 4. Watch webhook events appear in real-time
 
-*[Screenshot: Webhook Events section showing multiple events]*
+![2025-12-10_18-24-25](https://github.com/user-attachments/assets/e38e15c8-6ec2-4e0c-a593-a02ea85c40d8)
 
 **Script:**
 > "Let me show you the flow. I start the CLI listener, go to the demo store, buy the $1 widget with a test card, and immediately see the webhook events coming in — payment_intent.created, charge.succeeded, checkout.session.completed. All hitting my local WordPress."
@@ -134,7 +138,7 @@ Stripe Servers → Stripe CLI (your laptop) → localhost
 
 ### Monitor Real Membership Transactions
 
-*[Screenshot: MemberPress Events page]*
+![2025-12-10_18-26-45](https://github.com/user-attachments/assets/8059b2d7-5f6c-4272-b9ed-d659eac3ecac)
 
 - Automatically detects MemberPress + Stripe Gateway
 - Hooks into MemberPress transaction events
