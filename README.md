@@ -1,6 +1,8 @@
 # Stripe CLI Demo
 
-A WordPress plugin to teach developers how to use the Stripe CLI for local webhook testing.
+A WordPress plugin to help developers use the Stripe CLI for local webhook testing.
+
+<img width="1024" height="1536" alt="ChatGPT Image Dec 10, 2025, 07_30_26 PM" src="https://github.com/user-attachments/assets/3928191e-3a45-4421-b577-40bf197540ea" />
 
 ## Description
 
