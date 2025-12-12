@@ -27,6 +27,12 @@ jobs:
       - name: Install dependencies (production only)
         run: composer install --no-dev --optimize-autoloader --prefer-dist
 
+      - name: Verify vendor exists
+        run: |
+          echo "Checking vendor directory..."
+          ls -la vendor/
+          ls -la vendor/autoload.php
+
       - name: Create plugin directory
         run: |
           mkdir -p build/stripe-cli-demo
@@ -36,12 +42,17 @@ jobs:
           cp -r includes build/stripe-cli-demo/
           cp -r vendor build/stripe-cli-demo/
           cp stripe-cli-demo.php build/stripe-cli-demo/
+          cp composer.json build/stripe-cli-demo/
           cp README.md build/stripe-cli-demo/
 
           # Optional: copy LICENSE if it exists
           if [ -f "LICENSE" ]; then
             cp LICENSE build/stripe-cli-demo/
           fi
+
+          # Verify vendor was copied
+          echo "Verifying vendor in build..."
+          ls -la build/stripe-cli-demo/vendor/
 
       - name: Create ZIP archive
         run: |
